@@ -20,6 +20,7 @@ Aplicación web para estudiantes de la FACET (UNT, Tucumán) que reúne y organi
 6. No toques archivos fuera del alcance de la tarea. Si ves un problema ajeno, mencionalo al final en vez de arreglarlo.
 7. Al terminar una tarea, actualizá la checklist de la semana y dejá una nota breve de qué queda pendiente.
 8. Seguí las reglas de seguridad de la sección 7 en **todo** el código, sin excepciones.
+9. **Nunca marques algo como verificado si no lo ejecutaste.** Si un comando requiere acceso de red o filesystem que el sandbox no tiene, decílo explícitamente. Cuando modifiques un archivo, mostrá el diff real (salida de `git diff` o antes/después leído en el mismo turno), no un resumen.
 
 ## 3. Stack
 
@@ -113,16 +114,25 @@ Los puntos se otorgan **solo cuando un moderador aprueba** el aporte.
 
 ## 9. Roadmap semanal
 
-**Estado actual: Semana 1** *(actualizar al terminar cada semana)*
+**Estado actual: Semana 2** *(actualizar al terminar cada semana)*
 
 Cada semana tiene un objetivo, tareas y un criterio de "terminado". Al empezar una semana, el dueño te pedirá dividirla en pasos más pequeños. No avances a la siguiente hasta que se cumpla el criterio.
 
-### Semana 1: Base del proyecto
-- [ ] Monorepo con pnpm, TypeScript estricto, ESLint y Prettier
-- [ ] `apps/web` con Vite, React, Tailwind y shadcn/ui
-- [ ] `apps/api` con Fastify y endpoint `GET /health`
-- [ ] `docker-compose.yml` con PostgreSQL, api y web
-- [ ] `.env.example` y README con instrucciones de arranque
+### Semana 1: Base del proyecto ✅ — verificada por el dueño (2026-11-18)
+- [x] Monorepo con pnpm, TypeScript estricto, ESLint y Prettier
+- [x] `apps/web` con Vite, React, Tailwind y shadcn/ui
+- [x] `apps/api` con Fastify y endpoint `GET /health` (con cierre graceful en SIGTERM/SIGINT)
+- [x] `docker-compose.yml` con PostgreSQL, api y web (healthchecks en compose, imágenes con versión fija, sin root)
+- [x] `.env.example` y README con instrucciones de arranque
+
+**Decisiones de entorno tomadas en esta semana:**
+- Sistema operativo del servidor: **Linux**.
+- Runtime de contenedores: **Podman** (compatible con Docker CLI). Plugin de Compose instalado en `~/.docker/cli-plugins/docker-compose` (binario oficial de `github.com/docker/compose`, verificado con SHA-256).
+- Puerto web publicado **solo en loopback** (`127.0.0.1:${WEB_PORT:-8080}:8080`) en producción.
+- `docker-compose.dev.yml` sobrescribe el compose principal para publicar Postgres en `127.0.0.1:5432` durante el desarrollo local.
+- Imagen Nginx: `nginx/nginx-unprivileged:1.30.6-alpine` (namespace actualizado de `nginxinc/` a `nginx/`).
+- `CORS_ORIGIN` no tiene valor por defecto en producción; debe setearse explícitamente en `.env`.
+- `HEALTHCHECK` de contenedores definido en `docker-compose.yml` (no en los Dockerfiles) para garantizar compatibilidad con Podman/OCI.
 
 **Terminado cuando:** `docker compose up` levanta todo y la web muestra una pantalla inicial que consulta `/health`.
 
